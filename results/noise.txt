@@ -1,0 +1,13 @@
+short: 10 seeds, mean 47.9, observed SD 2.85, model SD 2.35 tasks (2.0%); flipping tasks 31
+medium: 3 seeds, mean 51.3, observed SD 5.03, model SD 3.00 tasks (2.5%); flipping tasks 27
+long: 5 seeds, mean 52.8, observed SD 3.35, model SD 2.98 tasks (2.5%); flipping tasks 37
+thorough: 3 seeds, mean 54.7, observed SD 1.15, model SD 2.77 tasks (2.3%); flipping tasks 23
+
+Minimum detectable difference (95% two-sided, 80% power) between two configs, tasks out of 118:
+  n= 1 seeds/arm: short-vs-short  9.3 | short-vs-medium 10.7 | short-vs-long 10.6 | short-vs-thorough 10.2 | medium-vs-medium 11.9 | medium-vs-long 11.8 | medium-vs-thorough 11.4 | long-vs-long 11.8 | long-vs-thorough 11.4 | thorough-vs-thorough 11.0
+  n= 2 seeds/arm: short-vs-short  6.6 | short-vs-medium  7.5 | short-vs-long  7.5 | short-vs-thorough  7.2 | medium-vs-medium  8.4 | medium-vs-long  8.4 | medium-vs-thorough  8.1 | long-vs-long  8.4 | long-vs-thorough  8.1 | thorough-vs-thorough  7.8
+  n= 3 seeds/arm: short-vs-short  5.4 | short-vs-medium  6.2 | short-vs-long  6.1 | short-vs-thorough  5.9 | medium-vs-medium  6.9 | medium-vs-long  6.8 | medium-vs-thorough  6.6 | long-vs-long  6.8 | long-vs-thorough  6.6 | thorough-vs-thorough  6.3
+  n= 5 seeds/arm: short-vs-short  4.2 | short-vs-medium  4.8 | short-vs-long  4.8 | short-vs-thorough  4.5 | medium-vs-medium  5.3 | medium-vs-long  5.3 | medium-vs-thorough  5.1 | long-vs-long  5.3 | long-vs-thorough  5.1 | thorough-vs-thorough  4.9
+  n=10 seeds/arm: short-vs-short  2.9 | short-vs-medium  3.4 | short-vs-long  3.4 | short-vs-thorough  3.2 | medium-vs-medium  3.8 | medium-vs-long  3.7 | medium-vs-thorough  3.6 | long-vs-long  3.7 | long-vs-thorough  3.6 | thorough-vs-thorough  3.5
+
+Single leaderboard run: 95% interval of one config's score = +/- short 4.6, medium 5.9, long 5.8, thorough 5.4 tasks

@@ -1,0 +1,23 @@
+Bootstrap: docker
+From: python:3.12-slim
+
+%files
+    /datahub/harirai/husnain.rasool/gemma4/data/harness_wheels /opt/harness_wheels
+    /datahub/harirai/husnain.rasool/gemma4/data/docker/imp.py /opt/compat/imp.py
+    /datahub/harirai/husnain.rasool/gemma4/data/docker/telnetlib.py /opt/compat/telnetlib.py
+
+%post
+    set -e
+    apt-get update -qq
+    apt-get install -y -qq --no-install-recommends git patch protobuf-compiler pigz curl ca-certificates
+    rm -rf /var/lib/apt/lists/*
+    pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu
+    pip install --no-cache-dir /opt/harness_wheels/*.whl pytest pytest-timeout==2.1.0 typer pdm-backend setuptools wheel poetry-core hatchling flit-core editables
+    cp /opt/compat/imp.py /opt/compat/telnetlib.py /usr/local/lib/python3.12/site-packages/ 2>/dev/null || true
+    git config --system user.email "agent@eval"
+    git config --system user.name "Agent"
+    git config --system init.defaultBranch main
+    python -c "import swegemma, adk_submission, adk_eval_core, google.adk, litellm; print('harness ok', swegemma.__file__)"
+
+%environment
+    export TEST_TMPDIR=/tmp

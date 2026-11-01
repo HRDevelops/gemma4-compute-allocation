@@ -1,0 +1,26 @@
+# Mirror of the official docker/Dockerfile.public (swebench-sandbox image).
+Bootstrap: docker
+From: python:3.13-slim
+
+%files
+    /datahub/harirai/husnain.rasool/gemma4/data/docker/imp.py /usr/local/lib/python3.13/site-packages/imp.py
+    /datahub/harirai/husnain.rasool/gemma4/data/docker/telnetlib.py /usr/local/lib/python3.13/site-packages/telnetlib.py
+    /datahub/harirai/husnain.rasool/gemma4/data/wheels_plus /wheels
+
+%post
+    set -e
+    apt-get update -qq
+    apt-get install -y -qq --no-install-recommends git patch protobuf-compiler pigz
+    rm -rf /var/lib/apt/lists/*
+    pip install --no-cache-dir pytest pytest-timeout==2.1.0 typer pdm-backend setuptools wheel poetry-core hatchling flit-core editables
+    # Dockerfile uses --global for root; system scope works for any uid under Apptainer
+    git config --system user.email "agent@eval"
+    git config --system user.name "Agent"
+    git config --system init.defaultBranch main
+    git config --system --add safe.directory '*'
+    pip install --no-cache-dir --no-index --find-links /wheels pytest-httpbin
+    python3 -c "import pytest_httpbin, httpbin; print('httpbin ok')"
+    mkdir -p /workspace
+
+%environment
+    export TEST_TMPDIR=/tmp

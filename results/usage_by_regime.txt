@@ -1,0 +1,4 @@
+short     runs=1180 dur p50/p90 184/479s calls p50/p90 25/31 limits {'time': 92, 'none': 1074, 'turns': 6, 'calls': 8} invalid 236 (20%, resolved 0) gen_tok/run 7941 fastapi:22.0/60 httpx:0.8/1 requests:10.7/12 rich:14.4/45
+medium    runs=354 dur p50/p90 256/771s calls p50/p90 30/58 limits {'time': 18, 'none': 332, 'turns': 1, 'calls': 3} invalid 36 (10%, resolved 0) gen_tok/run 11672 fastapi:24.7/60 httpx:1.0/1 requests:9.7/12 rich:16.0/45
+long      runs=590 dur p50/p90 270/1094s calls p50/p90 29/103 limits {'none': 576, 'time': 12, 'calls': 1, 'turns': 1} invalid 21 (4%, resolved 0) gen_tok/run 16102 fastapi:25.2/60 httpx:0.8/1 requests:10.6/12 rich:16.2/45
+thorough  runs=354 dur p50/p90 249/983s calls p50/p90 31/101 limits {'none': 348, 'time': 6} invalid 14 (4%, resolved 0) gen_tok/run 15401 fastapi:25.3/60 httpx:1.0/1 requests:10.7/12 rich:17.7/45

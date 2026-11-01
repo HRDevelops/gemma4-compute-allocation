@@ -1,0 +1,6 @@
+﻿__pycache__/
+*.pyc
+raw/
+*.tgz
+*.sif
+urls.tsv

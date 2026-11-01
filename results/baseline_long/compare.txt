@@ -1,0 +1,15 @@
+118 tasks; short seeds ['seed0', 'seed1', 'seed2', 'seed3', 'seed4']; long seeds ['seed0', 'seed1', 'seed2']
+condition                          solved     range min/task kgen/tsk ktok/tsk   calls
+short x1                             48.4   45-50        3.9      7.9      235    23.8
+short x2 + selector                  52.6   51-53        7.8     15.8      469    47.7
+short x3 + selector                  54.3   53-55       11.7     23.7      704    71.5
+short x4 + selector                  55.4   55-56       15.5     31.5      938    95.3
+short x5 + selector                  56.0   56-56       19.4     39.4     1173   119.2
+long x1                              53.3   50-57        7.9     15.9      438    43.5
+long x2 + selector                   57.3   56-59       15.9     31.9      877    87.0
+long x3 + selector                   57.0   57-57       23.8     47.8     1315   130.5
+short oracle any-of-5                59.0
+long oracle any-of-3                 66.0
+
+short x5+selector minus long x1: +2.7 tasks, 95% CI [-2.3, +7.7]
+long runs: hit limit 9 / 354 | duration p50/p90 300/1167 s | tool calls p50/p90 29/95 | runs >28 calls 181 | >8 min 112

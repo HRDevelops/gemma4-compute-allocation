@@ -1,0 +1,12 @@
+R-short on holdout short seeds ['seed5', 'seed6', 'seed7', 'seed8', 'seed9']
+  k=2: single  47.4  selected  50.3  gain  +2.9 [+0.7, +5.2]  oracle  53.7  share  46%
+  k=3: single  47.4  selected  50.6  gain  +3.2 [+0.0, +6.5]  oracle  56.1  share  37%
+  k=4: single  47.4  selected  50.8  gain  +3.4 [-0.2, +7.2]  oracle  57.4  share  34%
+  k=5: single  47.4  selected  51.0  gain  +3.6 [-0.2, +7.6]  oracle  58.0  share  34%
+R-long on long seeds ['seed0', 'seed1', 'seed2', 'seed3', 'seed4'] (holdout = ['seed3', 'seed4'])
+  k=2 {3,4}:            single  52.0  selected  54.0  gain  +2.0 [+0.0, +4.5]  oracle  62.0  share  20%
+  k=2 with holdout (7 sets): single  52.6  selected  54.7  gain  +2.1 [+0.7, +3.6]  oracle  61.6  share  24%
+  k=3 with holdout (9 sets): single  52.7  selected  57.1  gain  +4.3 [+2.0, +6.8]  oracle  65.8  share  33%
+For reference, R-short applied to long runs:
+  k=2 with holdout: single  52.6  selected  55.7  gain  +3.1 [+0.7, +5.4]  oracle  61.6  share  35%
+  k=3 with holdout: single  52.7  selected  57.3  gain  +4.6 [+1.1, +8.1]  oracle  65.8  share  35%
