@@ -1,8 +1,8 @@
 # More Seeds, More Steps, or a Better Pick? Where Test-Time Compute Pays Off for a Small Local Coding Agent
 
-*Draft v0.3 (2026-11-01). All numbers come from files in `results/`; the source file is noted after each table. Code: [repository link, to add].*
+*Draft v0.4 (2026-11-02). All numbers come from files in `results/`; the source file is noted after each table. Code and per-run results: https://github.com/HRDevelops/gemma4-compute-allocation*
 
-**Abstract.** A small agent running on local hardware gets a fixed compute allowance per task. Should that compute go to one run with a larger budget, or to several short runs with one patch picked without tests? We study this for Gemma 4 31B on the 118 gradeable tasks of the Gemma 4 Developer Agent competition, using 2,478 agent runs across four budget regimes. We count cost as what the runs actually spent, not the nominal budget. At every cost level, a larger per-run budget matches or beats sampling more short runs. One long run is within noise of five short runs plus selection, at 2.6× less compute, mostly because fewer runs end without a usable patch. Test-free selection looked strong on the seeds it was tuned on, but a pre-registered holdout cut its gain in half, to no more than a validity filter. Gemma 4 judging its own patches added nothing. One run's score carries ±5 tasks of seed noise. We release an Apptainer grader that fixes three silent scoring faults in the public setup.
+**Abstract.** A small agent running on local hardware gets a fixed compute allowance per task. Should that compute go to one run with a larger budget, or to several short runs with one patch picked without tests? We study this for Gemma 4 31B on the 118 gradeable tasks of the Gemma 4 Developer Agent competition, using 2,950 agent runs across four budget regimes. We count cost as what the runs actually spent, not the nominal budget. At every cost level, a larger per-run budget matches or beats sampling more short runs. One long run is within noise of five short runs plus selection, at 2.6× less compute, mostly because fewer runs end without a usable patch. Test-free selection looked strong on the seeds it was tuned on, but a pre-registered holdout cut its gain in half, to no more than a validity filter. Gemma 4 judging its own patches added nothing. One run's score carries ±5 tasks of seed noise. We release an Apptainer grader that fixes three silent scoring faults in the public setup.
 
 ## 1. Introduction
 
@@ -46,11 +46,11 @@ The 118 tasks where gold passes and empty fails are our benchmark. Labels agree 
 | Regime | Time | Tool calls | Turns | Seeds |
 |---|---|---|---|---|
 | short (competition default) | 8 min | 28 | 80 | 10 |
-| medium | 16 min | 56 | 160 | 3 |
+| medium | 16 min | 56 | 160 | 5 |
 | long | 40 min | 140 | 400 | 5 |
-| long + budget-aware prompt | 40 min | 140 | 400 | 3 |
+| long + budget-aware prompt | 40 min | 140 | 400 | 5 |
 
-*Table 1. Budget regimes. 2,478 runs in total.*
+*Table 1. Budget regimes. 2,950 runs in total.*
 
 The budget-aware prompt changes one sentence. The original asks the agent to finish "in the minimum number of tool calls (under 8–10 turns)". The replacement states the budget and asks the agent to reproduce the bug and check edge cases before submitting.
 
@@ -71,43 +71,45 @@ To quantify the noise, we model each task as a coin with its own resolve probabi
 | Regime | Mean solved | SD across seeds | 95% interval of one run | Min. detectable difference, 3 / 5 seeds per arm |
 |---|---|---|---|---|
 | short | 47.9 | 2.9 | ±4.6 | 5.4 / 4.2 |
-| medium | 51.3 | 5.0 | ±5.9 | 6.9 / 5.3 |
+| medium | 52.8 | 4.1 | ±5.7 | 6.6 / 5.1 |
 | long | 52.8 | 3.4 | ±5.8 | 6.8 / 5.3 |
-| long + prompt | 54.7 | 1.2 | ±5.4 | 6.3 / 4.9 |
+| long + prompt | 54.8 | 1.1 | ±5.3 | 6.2 / 4.8 |
 
 *Table 2. The minimum detectable difference is computed at 95% confidence and 80% power. Source: `results/noise.txt`.*
 
-The practical consequence is blunt. A single submission scored once can't reliably separate two configurations that differ by fewer than about 9 tasks, which is 7.5 points of accuracy on these 118 tasks. Even with five seeds per configuration, differences under 4–5 tasks stay out of reach. Several effects in §4 and §5 are of this size, so we report them with paired confidence intervals and avoid ranking configurations by point estimates.
+A single submission can't reliably separate configurations that differ by fewer than about 9 tasks (7.5 accuracy points). Even with five seeds per arm, differences under 4–5 tasks stay out of reach. Several effects below are this size, so we report paired confidence intervals rather than rank point estimates.
 
 ## 4. Budget per run vs. number of runs
 
-The question is the following. With a fixed amount of compute, should we spend it on one run with a larger budget, or on several short runs, keeping one patch? The patch is picked by a test-free selector, frozen in advance and described in §5. Figure 2 plots tasks solved against measured cost for each regime, at k = 1 to 5 runs per task.
+With fixed compute, should we buy one run with a larger budget, or several short runs and keep one patch, picked by the frozen test-free selector of §5? Figure 2 plots tasks solved against measured cost for each regime, at k = 1 to 5 runs per task.
 
 ![Fig. 2](figs/fig2_frontier.png)
 
 *Figure 2. Each point averages over all k-subsets of that regime's seeds. Error bars are the SD across those subsets. Short runs carry k labels; the other lines follow the same left-to-right order. Source: `paper/figs/fig2_data.csv`.*
 
-**Budget matches or beats extra samples at every cost level.** The short-run line lies below the other three everywhere. One long run costs 7.3 minutes and solves 52.8 tasks. Two short runs plus the selector cost 7.6 minutes and solve 51.5. Five short runs plus the selector cost 19.0 minutes, 2.6 times as much, and still don't clearly beat one long run: 53.9 vs 52.8. The paired comparisons all point the same way, though no single one excludes zero:
+**Budget matches or beats extra samples at every cost level.** The short-run line lies below the other three everywhere. One medium run costs 5.7 minutes and one long run 7.3; both solve 52.8 tasks. Two short runs plus the selector cost 7.6 minutes and solve 51.5. Five short runs plus the selector cost 19.0 minutes, 2.6 times as much as one long run, and still don't clearly beat it: 53.9 vs 52.8. Every matched-cost comparison except the last points the same way, and two exclude zero:
 
 | Comparison (matched measured cost) | Difference in tasks | 95% CI |
 |---|---|---|
+| medium ×1 − short ×1 (medium costs 1.5×) | +4.9 | [+1.6, +8.5] |
+| medium ×1 − short ×2 + selector (medium cheaper) | +1.3 | [−1.8, +4.9] |
 | long ×1 − short ×2 + selector (~7.5 min) | +1.3 | [−1.8, +4.6] |
-| long + prompt ×1 − short ×2 + selector | +3.2 | [−0.6, +7.4] |
+| long + prompt ×1 − short ×2 + selector | +3.3 | [−0.2, +7.2] |
 | long ×2 + selector − short ×4 + selector (~15 min) | +2.8 | [−1.1, +7.0] |
+| long + prompt ×2 + selector − short ×4 + selector | +3.7 | [+0.1, +7.8] |
 | long ×1 − short ×5 + selector (short costs 2.6×) | −1.1 | [−4.7, +2.6] |
 
-*Table 3. Paired bootstrap over tasks, using per-task means over all seed subsets.*
+*Table 3. Paired bootstrap over tasks, using per-task means over all seed subsets. Source: `results/paired_tests.txt`.*
 
-**Why a bigger budget helps: fewer wasted runs.** A larger budget mostly prevents the agent from ending without a usable patch. We call a run *invalid* if its patch changes no source file or it hits a budget limit. Invalid runs never resolved a task, in any regime. Their share falls from 20% of short runs to 10% of medium runs and 4% of long runs. In the short regime, 8% of runs hit the 8-minute limit.
+The medium budget reaches the long budget's single-run score at 23% less measured cost. Most of the gain from a larger budget arrives by doubling it.
+
+**Why a bigger budget helps: fewer wasted runs.** A larger budget mostly prevents the agent from ending without a usable patch. We call a run *invalid* if its patch changes no source file or it hits a budget limit. Invalid runs never resolved a task, in any regime. Their share falls from 20% of short runs to 9% of medium runs and 4% of long runs. In the short regime, 8% of runs hit the 8-minute limit.
 
 The extra budget is mostly not spent, however. The median long run stops after 4.5 minutes and 29 tool calls, close to the short regime's 3.1 minutes and 25 calls. Only 14 of 590 long runs hit any limit. Measured cost grows 1.9× (and generated tokens 2.0×) for a 5× larger budget. **A larger budget acts as insurance for the minority of tasks that need it, not as a tax on every task.** That is why it wins at matched *measured* cost.
 
-**Telling the agent its budget helps a little, at no extra cost.** The budget-aware prompt doesn't make runs longer: 7.0 vs 7.3 minutes, and 31 vs 29 median calls. Its single runs score 54.7 against 52.8 for the plain long prompt (+1.9, CI [−2.0, +5.6]), and its spread across seeds is the lowest of any regime. That suggests the gain comes from more careful work rather than more work, but 3 seeds can't confirm it.
+**Telling the agent its budget helps a little, at no extra cost.** The budget-aware prompt barely changes run length: 7.5 vs 7.3 minutes, and 31 vs 29 median calls. Its single runs score 54.8 against 52.8 for the plain long prompt (+2.0, CI [−1.4, +5.4]). Its spread across seeds is by far the lowest of any regime (SD 1.1 vs 3.4 tasks over 5 seeds). That suggests more careful work rather than more work, but the gain itself is not significant.
 
 **Gains are spread across repositories.** Comparing a single long run with a single short run, fastapi gains 3.2 tasks of 60 and rich gains 1.8 of 45, while requests is already near its ceiling (10.7 of 12). The result is therefore not driven by one project.
-
-**Caveat on hardware.** We run on H100s, where the 8-minute limit binds on 8% of short runs. Kaggle's four L4s generate tokens more slowly, so the limit will bind more often there. If anything, that should widen the advantage of a larger budget.
-
 ## 5. Picking a patch without tests
 
 Several runs only help if we can tell which patch is right without the hidden tests. The ceiling is high. For long runs, an oracle that always picks a correct patch reaches 65.8 tasks at k = 3 and 70.0 at k = 5, against 52.8 for one run. For short runs it reaches 58.1 at k = 5, against 47.9.
@@ -120,9 +122,6 @@ Several runs only help if we can tell which patch is right without the hidden te
 - **Gemma 4 as judge.** Two variants:
   - *Pointwise:* the model scores each patch from 0 to 10 against the issue text, averaged over 3 samples.
   - *Listwise:* the model sees all candidates in random order and names the best one, again over 3 samples.
-
-  Judging all 473 valid short patches took 6 minutes on two H100s.
-
 **In-sample, simple rules look strong.** On short seeds 0–4, the best combination was named R-short: drop invalid runs, prefer runs whose last command after the final edit succeeded, then take the smallest patch. It recovers 72% of the headroom at k = 5 (+7.6 tasks, CI [+3.6, +11.8]). The Gemma judges add nothing beyond this:
 
 - the listwise judge reaches 62%, the same as patch size alone;
@@ -141,23 +140,23 @@ On the holdout seeds:
 - That is half its in-sample value.
 - It is indistinguishable from the validity filter alone (50.8 vs 51.0 at k = 5).
 
-The trace signals that looked useful were largely fitted to the noise of five specific seeds. The same happened to a pattern we had noticed in-sample, that the best signals differ between short and long runs. On the long runs that include held-out seeds, the frozen short-run rule does as well as the rule tuned for long runs: +4.6 vs +4.3 tasks at k = 3.
+The trace signals that looked useful were largely fitted to the noise of five specific seeds. The same happened to a pattern we had noticed in-sample, that the best signals differ between short and long runs. On the long runs that include held-out seeds, the frozen short-run rule does as well as the rule tuned for long runs: +4.6 vs +4.3 tasks at k = 3. On budget-aware runs, the frozen rule even hurts beyond k = 2: at k = 5 it picks 55.0 tasks, below the validity filter alone (56.4).
 
 **Selection, not generation, is the bottleneck.** At k = 5, long runs contain a correct patch for 70 tasks, but our best selector finds 58. Twelve tasks are lost purely to choosing wrong. Neither cheap trace signals nor the same model acting as its own judge close this gap. For a small local agent, extra runs therefore pay off mainly through the validity filter. The rest of their potential waits on a better verifier: one that executes code, such as agent-written reproduction tests, or a stronger judge model.
 
 ## 6. What this means for competitors
 
-1. **Raise the budget before adding runs.** Unused budget costs nothing, and runs that end unusable cost a full attempt. Measure the share of runs that end without a usable patch, meaning no source change or a budget limit hit. On H100 it is 20% at the default budget, and the 8-minute limit alone causes 8%. On L4 it will be higher.
+1. **Raise the budget before adding runs.** Unused budget costs nothing; an unusable run costs a full attempt. Measure your share of unusable runs: on H100 it is 20% at the default budget (8% from the time limit alone), and higher on L4.
 2. **If you sample, filter, and don't over-engineer the pick.** Dropping unusable runs is free and captures nearly all of the out-of-sample gain we could find. Hand-tuned trace rules and same-model judges did not generalize.
 3. **Don't trust a single score.** One submission's score moves by about ±5 tasks across seeds. A local comparison needs three to five seeds per configuration and a paired test before a 5-task difference means anything. Tune on one set of seeds and confirm on another.
-4. **Small prompt changes are cheap to test this way.** Telling the agent its real budget cost nothing and may help (+1.9 tasks, not significant). It is the kind of change that needs the noise discipline in point 3 to be confirmed.
+4. **Small prompt changes are cheap to test this way.** Telling the agent its real budget cost almost nothing and may help (+2.0 tasks, not significant). It is the kind of change that needs the noise discipline in point 3 to be confirmed.
 
 ## 7. Limitations
 
 - **One model, one agent, one task pool.** We study Gemma 4 31B with the public Budget-Fit agent. The 118 tasks come from four repositories, and fastapi and rich make up 89% of them.
 - **Holdout seeds, not holdout tasks.** The selector holdout uses new seeds on the same tasks. Holding out tasks would probably shrink its gain further.
 - **Hardware.** We run on 2×H100 instead of Kaggle's 4×L4. Absolute times differ, and the 8-minute limit binds more often on L4. We expect this to favor larger budgets even more, but we did not measure it.
-- **Few seeds for the newer regimes.** The medium and budget-aware regimes have only 3 seeds, so their differences from the long regime are not statistically resolved.
+- **Five seeds per larger budget.** With 5 seeds, differences of about 2 tasks between the medium, long and budget-aware regimes remain unresolved.
 - **Cost measure.** Wall time depends on server load; we hold concurrency fixed at 10. Generated tokens give the same ratios, but neither captures memory cost or prefill.
 - **A weak judge.** Our judge is the same 31B model with a short prompt. A stronger or execution-based verifier may close part of the 12-task selection gap.
 
