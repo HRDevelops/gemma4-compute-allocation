@@ -11,7 +11,7 @@ Competition agents for this track run a 31B model on four L4 GPUs, under an 8-mi
 - **Sample more:** run the agent several times and keep one patch, as in repeated sampling and best-of-n verification [2, 5, 6].
 - **Think longer:** give a single run more time and tool calls [3].
 
-Large-model studies report strong gains from sampling, but they pick the patch with hidden or generated tests, or with a trained verifier. Whether either approach pays off for a *small local* model, with *no* test oracle and a hard budget, is an open empirical question. So is how one would even measure it, given that one evaluation of an agent is noisy [7, 8].
+Large-model studies report strong gains from sampling, but they pick the patch with hidden or generated tests, or with a trained verifier. Whether either approach pays off for a *small local* model, with *no* test oracle and a hard budget, is an open empirical question. So is how to measure it, since one agent evaluation is noisy [7, 8].
 
 We answer it on the competition's own tasks and harness, with four contributions:
 
@@ -64,7 +64,7 @@ Figure 1 shows how often each task is solved across seeds.
 
 *Figure 1. Tasks grouped by the share of seeds that solve them. With 10 short seeds, 31 tasks (26%) flip at least once. With 5 long seeds, 37 tasks flip.*
 
-Nearly half the tasks are never solved (57 short, 48 long), and about a quarter are always solved. The rest flip between seeds. Those flipping tasks are what makes a single score noisy, and they are also the only tasks any selection method can gain on.
+Nearly half the tasks are never solved (57 short, 48 long), and about a quarter are always solved. The rest flip between seeds. These flipping tasks make a single score noisy, and they are the only tasks selection can gain on.
 
 To quantify the noise, we model each task as a coin with its own resolve probability *p_t*, estimated from the seeds. The variance of one run's score is then Σ *p_t*(1 − *p_t*). The model's predicted spread matches the observed spread across seeds (2.35 vs 2.85 tasks for short).
 
@@ -109,7 +109,7 @@ The extra budget is mostly not spent, however. The median long run stops after 4
 
 **Telling the agent its budget may help a little, at almost no extra cost.** The budget-aware prompt barely changes run length: 7.5 vs 7.3 minutes, and 31 vs 29 median calls. Its single runs score 54.8 against 52.8 for the plain long prompt (+2.0, CI [−1.4, +5.4]). Its spread across seeds is by far the lowest of any regime (SD 1.1 vs 3.4 tasks over 5 seeds). That suggests more careful work rather than more work, but the gain itself is not significant.
 
-**Gains are spread across repositories.** Comparing a single long run with a single short run, fastapi gains 3.2 tasks of 60 and rich gains 1.8 of 45, while requests is near its ceiling in both (about 10.7 of 12). The result is therefore not driven by one project.
+**Gains are spread across repositories.** Comparing a single long run with a single short run, fastapi gains 3.2 tasks of 60 and rich gains 1.8 of 45, while requests is near its ceiling in both (about 10.7 of 12).
 
 ## 5. Picking a patch without tests
 
@@ -151,8 +151,6 @@ The trace signals were largely fitted to the noise of five seeds. So was an in-s
 1. **Raise the budget before adding runs.** Unused budget costs nothing; an unusable run costs a full attempt. Measure your share of unusable runs: on H100 it is 20% at the default budget (8% from the time limit alone), and higher on L4.
 2. **If you sample, filter, and don't over-engineer the pick.** Dropping unusable runs is free and captures nearly all of the out-of-sample gain we could find. Hand-tuned trace rules and same-model judges did not generalize.
 3. **Don't trust a single score.** One submission's score moves by about ±5 tasks across seeds. A local comparison needs three to five seeds per configuration and a paired test before a 5-task difference means anything. Tune on one set of seeds and confirm on another.
-4. **Small prompt changes are cheap to test this way.** Telling the agent its real budget cost almost nothing and may help (+2.0 tasks, not significant). It is the kind of change that needs the noise discipline in point 3 to be confirmed.
-
 ## 7. Limitations
 
 - **One model, one agent, one task pool.** We study Gemma 4 31B with the public Budget-Fit agent. The 118 tasks come from four repositories, and fastapi and rich make up 89% of them.
@@ -165,6 +163,10 @@ The trace signals were largely fitted to the noise of five seeds. So was an in-s
 ## 8. Related work
 
 SWE-bench [1] set the format of these tasks. On the sampling side, repeated sampling raises coverage roughly log-linearly with the number of samples [2], and SWE agents exploit this with test-based or verifier-based selection [4, 5, 6]. Our setting removes both the tests and the trained verifier, and finds the coverage gain largely unrecoverable. On the budget side, compute-optimal test-time scaling [3] shows that the best allocation depends on problem difficulty. At a much smaller scale, we find a clear preference for budget over samples, driven by run failures rather than reasoning depth. Finally, work on agent evaluation argues for cost-aware comparisons [7] and error bars on benchmark scores [8]. We apply both to a live competition and show how large its single-run noise is.
+
+## AI assistance
+
+I chose the research question, directed the project and made its key decisions, including the change of direction after the first hypothesis failed. The experiments ran on my cluster allocation, and I reviewed the results and checked every reference. I used an AI assistant (Claude) for support with coding, experiment runs and writing. Every number can be reproduced from the released repository.
 
 ## References
 
