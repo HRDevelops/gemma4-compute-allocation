@@ -87,9 +87,9 @@ With fixed compute, should we buy one run with a larger budget, or several short
 
 *Figure 2. Each point averages over all k-subsets of that regime's seeds. Error bars are the SD across those subsets. Short runs carry k labels; the other lines follow the same left-to-right order. Source: `paper/figs/fig2_data.csv`.*
 
-**Budget matches or beats extra samples at every cost level.** The short-run line lies below the other three everywhere. One medium run costs 5.7 minutes and one long run 7.3; both solve 52.8 tasks. Two short runs plus the selector cost 7.6 minutes and solve 51.5. Five short runs plus the selector cost 19.0 minutes, 2.6 times as much as one long run, and still don't clearly beat it: 53.9 vs 52.8. Every matched-cost comparison except the last points the same way, and two exclude zero:
+**Budget matches or beats extra samples at every cost level.** The short-run line lies below the other three everywhere. One medium run costs 5.7 minutes and one long run 7.3; both solve 52.8 tasks. Two short runs plus the selector cost 7.6 minutes and solve 51.5. Five short runs plus the selector cost 19.0 minutes, 2.6 times as much as one long run, and still don't clearly beat it: 53.9 vs 52.8. Every paired comparison except the last favors budget, and two exclude zero:
 
-| Comparison (matched measured cost) | Difference in tasks | 95% CI |
+| Comparison (measured cost; ratio noted where unequal) | Difference in tasks | 95% CI |
 |---|---|---|
 | medium ×1 − short ×1 (medium costs 1.5×) | +4.9 | [+1.6, +8.5] |
 | medium ×1 − short ×2 + selector (medium cheaper) | +1.3 | [−1.8, +4.9] |
@@ -107,9 +107,10 @@ The medium budget reaches the long budget's single-run score at 23% less measure
 
 The extra budget is mostly not spent, however. The median long run stops after 4.5 minutes and 29 tool calls, close to the short regime's 3.1 minutes and 25 calls. Only 14 of 590 long runs hit any limit. Measured cost grows 1.9× (and generated tokens 2.0×) for a 5× larger budget. **A larger budget acts as insurance for the minority of tasks that need it, not as a tax on every task.** That is why it wins at matched *measured* cost.
 
-**Telling the agent its budget helps a little, at no extra cost.** The budget-aware prompt barely changes run length: 7.5 vs 7.3 minutes, and 31 vs 29 median calls. Its single runs score 54.8 against 52.8 for the plain long prompt (+2.0, CI [−1.4, +5.4]). Its spread across seeds is by far the lowest of any regime (SD 1.1 vs 3.4 tasks over 5 seeds). That suggests more careful work rather than more work, but the gain itself is not significant.
+**Telling the agent its budget may help a little, at almost no extra cost.** The budget-aware prompt barely changes run length: 7.5 vs 7.3 minutes, and 31 vs 29 median calls. Its single runs score 54.8 against 52.8 for the plain long prompt (+2.0, CI [−1.4, +5.4]). Its spread across seeds is by far the lowest of any regime (SD 1.1 vs 3.4 tasks over 5 seeds). That suggests more careful work rather than more work, but the gain itself is not significant.
 
-**Gains are spread across repositories.** Comparing a single long run with a single short run, fastapi gains 3.2 tasks of 60 and rich gains 1.8 of 45, while requests is already near its ceiling (10.7 of 12). The result is therefore not driven by one project.
+**Gains are spread across repositories.** Comparing a single long run with a single short run, fastapi gains 3.2 tasks of 60 and rich gains 1.8 of 45, while requests is near its ceiling in both (about 10.7 of 12). The result is therefore not driven by one project.
+
 ## 5. Picking a patch without tests
 
 Several runs only help if we can tell which patch is right without the hidden tests. The ceiling is high. For long runs, an oracle that always picks a correct patch reaches 65.8 tasks at k = 3 and 70.0 at k = 5, against 52.8 for one run. For short runs it reaches 58.1 at k = 5, against 47.9.
@@ -122,6 +123,7 @@ Several runs only help if we can tell which patch is right without the hidden te
 - **Gemma 4 as judge.** Two variants:
   - *Pointwise:* the model scores each patch from 0 to 10 against the issue text, averaged over 3 samples.
   - *Listwise:* the model sees all candidates in random order and names the best one, again over 3 samples.
+
 **In-sample, simple rules look strong.** On short seeds 0–4, the best combination was named R-short: drop invalid runs, prefer runs whose last command after the final edit succeeded, then take the smallest patch. It recovers 72% of the headroom at k = 5 (+7.6 tasks, CI [+3.6, +11.8]). The Gemma judges add nothing beyond this:
 
 - the listwise judge reaches 62%, the same as patch size alone;
@@ -140,7 +142,7 @@ On the holdout seeds:
 - That is half its in-sample value.
 - It is indistinguishable from the validity filter alone (50.8 vs 51.0 at k = 5).
 
-The trace signals that looked useful were largely fitted to the noise of five specific seeds. The same happened to a pattern we had noticed in-sample, that the best signals differ between short and long runs. On the long runs that include held-out seeds, the frozen short-run rule does as well as the rule tuned for long runs: +4.6 vs +4.3 tasks at k = 3. On budget-aware runs, the frozen rule even hurts beyond k = 2: at k = 5 it picks 55.0 tasks, below the validity filter alone (56.4).
+The trace signals were largely fitted to the noise of five seeds. So was an in-sample hint that the best signals differ by regime: on long runs with held-out seeds, the frozen short-run rule matches the long-tuned rule (+4.6 vs +4.3 tasks at k = 3). On budget-aware runs, the frozen rule even hurts beyond k = 2: at k = 5 it picks 55.0 tasks, below the validity filter alone (56.4).
 
 **Selection, not generation, is the bottleneck.** At k = 5, long runs contain a correct patch for 70 tasks, but our best selector finds 58. Twelve tasks are lost purely to choosing wrong. Neither cheap trace signals nor the same model acting as its own judge close this gap. For a small local agent, extra runs therefore pay off mainly through the validity filter. The rest of their potential waits on a better verifier: one that executes code, such as agent-written reproduction tests, or a stronger judge model.
 
@@ -171,6 +173,6 @@ SWE-bench [1] set the format of these tasks. On the sampling side, repeated samp
 3. C. Snell et al. Scaling LLM Test-Time Compute Optimally can be More Effective than Scaling Model Parameters. arXiv:2408.03314, 2024.
 4. C. S. Xia et al. Agentless: Demystifying LLM-based Software Engineering Agents. arXiv:2407.01489, 2024.
 5. R. Ehrlich et al. CodeMonkeys: Scaling Test-Time Compute for Software Engineering. arXiv:2501.14723, 2025.
-6. J. Pan et al. Training Software Engineering Agents and Verifiers with SWE-Gym. arXiv:2412.21139, 2024.
+6. J. Pan et al. Training Software Engineering Agents and Verifiers with SWE-Gym. ICML 2025. arXiv:2412.21139.
 7. S. Kapoor et al. AI Agents That Matter. arXiv:2407.01502, 2024.
 8. E. Miller. Adding Error Bars to Evals: A Statistical Approach to Language Model Evaluations. arXiv:2411.00640, 2024.
